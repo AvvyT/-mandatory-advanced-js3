@@ -1,0 +1,10 @@
+.email {
+    border: 2px solid white;
+    box-sizing: border-box;
+    background: rgba(79, 78, 148, 0.698);
+    border-radius: 7px;
+    height: 40px;
+    width: 265px;
+    color: black;
+    font-size: 1.5em;
+}

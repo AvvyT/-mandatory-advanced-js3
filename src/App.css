@@ -1,0 +1,31 @@
+
+.App {
+  background-color: rgba(57, 56, 97, 0.698);
+  font-family: 'Courier New', Courier, monospace;
+  background: url("/blue-rock.jpg") no-repeat;
+  min-height: calc(100vh);
+  background-size: cover;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: white;
+  padding-bottom: 25px;
+  text-align: center;
+}
+
+.page {
+  color: white;
+  margin: 12px;
+  width: 110px;
+  height: 30px;
+  border-radius: 7px;
+  font-weight: bold;
+  background: rgba(79, 78, 148, 0.698);
+  border: none;
+  outline: none;
+  font-size: 20px;
+  border: 2px solid rgba(83, 137, 224, 0.719);
+}
+

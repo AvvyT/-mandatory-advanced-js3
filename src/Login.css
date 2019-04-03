@@ -1,0 +1,14 @@
+.form-style {
+    background: rgba(79, 78, 148, 0.698);
+    border-radius: 10px;
+    border: 2px solid rgba(83, 137, 224, 0.719);
+    box-sizing: border-box;
+    padding: 0 20px;
+    text-align: center;
+}
+
+.myInput {
+    margin-bottom: 7px;
+    font-size: 20px;
+}
+
