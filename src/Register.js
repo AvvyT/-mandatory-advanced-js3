@@ -7,8 +7,7 @@ import { updateToken } from "./store";
 const url = 'http://ec2-13-53-32-89.eu-north-1.compute.amazonaws.com:3000';
 
 class Register extends Component {
-    state = { email: '', password: '', login: false }
-
+    state = { email: '', password: '', login: false, error: false }
 
     changeEmailInput(e) {
         this.setState({ email: e.target.value });
@@ -30,11 +29,21 @@ class Register extends Component {
                 updateToken(response.data.token);
                 this.setState({ login: true });
             })
+            .catch((error) => {
+                console.log(error);
+                this.setState({ error: true })
+            })
     }
 
     render() {
         if (this.state.login) {
             return <Redirect to="/"></Redirect>
+        } else if (this.state.error) {
+            return (
+                <div>
+                    <p>Something went wrong...</p>
+                </div>
+            )
         }
         return (
             <>

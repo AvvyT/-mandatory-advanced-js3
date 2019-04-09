@@ -7,8 +7,9 @@ import axios from 'axios';
 import { token$ } from './store';
 import './Todos.css';
 
+// hämta inlogat email-info
 function getEmail(token) {
-    // om vi inte har tillgång till 'hemliga-nyckeln' då funk. decode(token) hämta ut infon
+    // om vi inte har tillgång till 'hemliga-nyckeln' då funk/ decode(token) hämta ut infon
     const decoded = jwt.decode(token);
     return decoded.email;
 }
@@ -16,13 +17,27 @@ function getEmail(token) {
 const url = 'http://ec2-13-53-32-89.eu-north-1.compute.amazonaws.com:3000';
 
 class Todos extends Component {
-    state = {
-        token: token$.value, email: '',
-        tasks: ['simple', 'thing'], newTask: ''
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            token: token$.value,
+            tasks: ['simple', 'thing'], newTask: ''
+        }
+
+        this.getTodos = this.getTodos.bind(this);
     }
 
     change(e) {
         this.setState({ newTask: e.target.value });
+    }
+
+    getTodos() {
+        axios.get(url + '/todos', { headers: { Authorization: 'Bearer ' + this.state.token } })
+            .then((response) => {
+                console.log(response.data);
+                this.setState({ tasks: response.data.todos });
+            });
     }
 
     componentDidMount() {
@@ -33,11 +48,7 @@ class Todos extends Component {
 
         });
 
-        axios.get(url + '/todos', { headers: { Authorization: 'Bearer ' + this.state.token } })
-            .then((response) => {
-                console.log(response.data);
-                this.setState({ tasks: response.data.todo });
-            })
+        this.getTodos();
     }
 
     componentWillUnmount() {
@@ -52,7 +63,7 @@ class Todos extends Component {
             { headers: { Authorization: 'Bearer ' + this.state.token } })
             .then((response) => {
                 console.log(response.data);
-                this.setState({ tasks: response.data.todo });
+                this.setState({ newTask: response.data.todos });
             })
     }
 
@@ -64,41 +75,39 @@ class Todos extends Component {
                 axios.get(url + '/todos', { headers: { Authorization: 'Bearer ' + this.state.token } })
                     .then((response) => {
                         console.log(response);
-                        this.setState({ tasks: response.data.tasks });
+                        this.setState({ tasks: response.data.todos });
                     })
             });
     }
 
     render() {
+        const { tasks } = this.state;
+
         if (!this.state.token) {
             return <Redirect to="/" />;
         }
-        const tasks = (this.state.tasks).map((task, index) => (
-            <li key={index}>
-                {task} <button name="removeTask"
-                    onClick={this.handleClickIndex.bind(this, task.id)}>x</button>
-            </li>
-        ))
 
         return (
             <>
-                <h3 className='email'>{getEmail(this.state.token)}</h3>
-                    <h1>My todo list </h1>
-                    <Helmet>
-                        <title>Todos page</title>
-                    </Helmet>
-               
+                <h1>My todo list </h1>
+                <Helmet>
+                    <title>Todos page</title>
+                </Helmet>
+
                 <form className='form-style'
                     onSubmit={this.handleSubmit.bind(this)}
                 >
-                    <h2>Add your todo</h2>
+                    <h2>Add your todo <br/>
+                    <span className='email'>
+                    {getEmail(this.state.token)}</span>
+                    </h2>
                     <label>Item <input
                         type="text"
                         minLength={1}
                         maxLength={30}
                         placeholder=" Write a todo.."
                         className="myInput"
-                        value={this.state.value}
+                        value={this.state.newTask}
                         onChange={this.change.bind(this)} />
                     </label>
                     <br></br>
@@ -108,11 +117,13 @@ class Todos extends Component {
                 </form>
                 <div>
                     <ul>
-                        {tasks}
-                        {
-                            this.state.task &&
-                            <li>{this.state.newTask}</li>
-                        }
+                        {tasks.map((task) => (
+                            <li className='tasks' key={task.id}>
+                                {task.content}
+                                <button className="removeTask"
+                                    onClick={this.handleClickIndex.bind(this, task.id)}>x</button>
+                            </li>
+                        ))}
                     </ul>
                 </div>
             </>

@@ -1,10 +1,19 @@
 .email {
-    border: 2px solid white;
-    box-sizing: border-box;
-    background: rgba(79, 78, 148, 0.698);
-    border-radius: 7px;
-    height: 40px;
-    width: 265px;
     color: black;
-    font-size: 1.5em;
+    font-size: 0.9em;
+}
+
+.tasks{
+    font-size: 1em;
+    font-weight: bold;
+}
+
+.removeTask{
+    background: none;
+    color: red;
+    font-weight: bold;
+    font-size: 1em;
+    margin-left: 5px;
+    border: none;
+    cursor: pointer;
 }
