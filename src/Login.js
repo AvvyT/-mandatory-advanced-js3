@@ -28,6 +28,7 @@ class Login extends Component {
             .then((response) => {
                 console.log(response.data); // får token
 
+                // hämta en JWT-token
                 updateToken(response.data.token);
                 this.setState({ login: true });
             })

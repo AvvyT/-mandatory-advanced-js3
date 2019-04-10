@@ -21,22 +21,28 @@ class Todos extends Component {
         super(props);
 
         this.state = {
-            token: token$.value,
-            tasks: ['simple', 'thing'], newTask: ''
+            token: token$.value, error: false,
+            tasks: [{ content: 'test', id: 'thing' }], newTask: ''
         }
 
         this.getTodos = this.getTodos.bind(this);
     }
 
-    change(e) {
-        this.setState({ newTask: e.target.value });
-    }
 
     getTodos() {
+        // ladda inte onödig om snabbt startas ny sida efter
+        this.source = axios.CancelToken.source();
+
         axios.get(url + '/todos', { headers: { Authorization: 'Bearer ' + this.state.token } })
             .then((response) => {
-                console.log(response.data);
+                console.log(response.data.todos); // ge data.todos
                 this.setState({ tasks: response.data.todos });
+            })
+            .catch(error => {
+                // fel meddelande
+                if (axios.isCancel(error)) {
+                    console.log("Request canceled", error.message);
+                }
             });
     }
 
@@ -45,7 +51,6 @@ class Todos extends Component {
             this.setState({ token: this.state.token });
 
             console.log(token); // få ut token
-
         });
 
         this.getTodos();
@@ -53,18 +58,31 @@ class Todos extends Component {
 
     componentWillUnmount() {
         this.subscription.unsubscribe();
+        
+        this.source.cancel("Operation canceled by the user.");
     }
 
+    change(e) {
+        this.setState({ newTask: e.target.value });
+    }
 
     handleSubmit(e) {
         e.preventDefault();
+        const { newTask, token } = this.state;
 
-        axios.post(url + '/todos', { content: this.state.newTask },
-            { headers: { Authorization: 'Bearer ' + this.state.token } })
+        let addNew = { content: newTask }
+
+        axios.post(url + '/todos', addNew,
+            { headers: { Authorization: 'Bearer ' + token } })
             .then((response) => {
-                console.log(response.data);
-                this.setState({ newTask: response.data.todos });
+                console.log(response.data.todo);
+                this.setState({ tasks: [...this.state.tasks, response.data.todo] });
             })
+            .catch((error) => {
+                console.log(error);
+                this.setState({ error: true })
+            })
+        this.setState({ newTask: '' });
     }
 
     handleClickIndex(id) {
@@ -72,19 +90,22 @@ class Todos extends Component {
         axios.delete(url + '/todos/' + id,
             { headers: { Authorization: 'Bearer ' + this.state.token } })
             .then(() => {
-                axios.get(url + '/todos', { headers: { Authorization: 'Bearer ' + this.state.token } })
+                axios.get(url + '/todos',
+                    { headers: { Authorization: 'Bearer ' + this.state.token } })
                     .then((response) => {
-                        console.log(response);
+                        console.log(response.data.todos);
                         this.setState({ tasks: response.data.todos });
                     })
             });
     }
 
     render() {
-        const { tasks } = this.state;
+        const { tasks, token, error } = this.state;
 
-        if (!this.state.token) {
+        if (!token) {
             return <Redirect to="/" />;
+        } else if (error) {
+            return (<div><p>Something is wrong..</p></div>)
         }
 
         return (
@@ -97,9 +118,9 @@ class Todos extends Component {
                 <form className='form-style'
                     onSubmit={this.handleSubmit.bind(this)}
                 >
-                    <h2>Add your todo <br/>
-                    <span className='email'>
-                    {getEmail(this.state.token)}</span>
+                    <h2>Add your todo <br />
+                        <span className='email'>
+                            {getEmail(this.state.token)}</span>
                     </h2>
                     <label>Item <input
                         type="text"
