@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
+import { Link } from "react-router-dom";
 //modulen jsonwebtoken skapa en JWT-token
 import jwt from "jsonwebtoken";
 import { Helmet } from 'react-helmet';
 import { Redirect } from "react-router-dom";
 import axios from 'axios';
-import { token$ } from './store';
+import { token$, updateToken } from './store';
 import './Todos.css';
 
 // hämta inlogat email-info
@@ -33,7 +34,10 @@ class Todos extends Component {
         // ladda inte onödig om snabbt startas ny sida efter
         this.source = axios.CancelToken.source();
 
-        axios.get(url + '/todos', { headers: { Authorization: 'Bearer ' + this.state.token } })
+        axios.get(url + '/todos', {
+            cancelToken: this.source.token,
+            headers: { Authorization: 'Bearer ' + this.state.token }
+        })
             .then((response) => {
                 console.log(response.data.todos); // ge data.todos
                 this.setState({ tasks: response.data.todos });
@@ -47,19 +51,15 @@ class Todos extends Component {
     }
 
     componentDidMount() {
-        this.subscription = token$.subscribe((token) => {
-            this.setState({ token: this.state.token });
-
-            console.log(token); // få ut token
-        });
-
-        this.getTodos();
+        if (this.state.token) {
+            this.getTodos();
+        }
     }
 
     componentWillUnmount() {
-        this.subscription.unsubscribe();
-        
-        this.source.cancel("Operation canceled by the user.");
+        if (this.source) {
+            this.source.cancel("Operation canceled by the user.");
+        }
     }
 
     change(e) {
@@ -99,6 +99,10 @@ class Todos extends Component {
             });
     }
 
+    handleLogout() {
+        updateToken(null);
+    }
+
     render() {
         const { tasks, token, error } = this.state;
 
@@ -114,6 +118,8 @@ class Todos extends Component {
                 <Helmet>
                     <title>Todos page</title>
                 </Helmet>
+
+                <Link to="/" onClick={this.handleLogout}><button className='page'>Sign out</button></Link>
 
                 <form className='form-style'
                     onSubmit={this.handleSubmit.bind(this)}

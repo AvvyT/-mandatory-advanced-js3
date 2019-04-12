@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Helmet } from 'react-helmet';
 import { Redirect } from "react-router-dom";
-import { updateToken } from './store';
+import { token$, updateToken } from './store';
 import axios from 'axios';
 import './Login.css'
 
@@ -9,7 +9,17 @@ const url = 'http://ec2-13-53-32-89.eu-north-1.compute.amazonaws.com:3000';
 
 class Login extends Component {
 
-    state = { email: '', password: '', login: false, error: false }
+    state = { token: token$.value, email: '', password: '', error: false }
+
+    componentDidMount() {
+        this.subscription = token$.subscribe((token) => {
+            this.setState({ token: token });
+        });
+    }
+
+    componentWillUnmount() {
+        this.subscription.unsubscribe();
+    }
 
     changeEmailInput(e) {
         this.setState({ email: e.target.value });
@@ -30,7 +40,6 @@ class Login extends Component {
 
                 // hämta en JWT-token
                 updateToken(response.data.token);
-                this.setState({ login: true });
             })
             .catch((error) => {
                 console.log(error);
@@ -39,7 +48,7 @@ class Login extends Component {
     }
 
     render() {
-        if (this.state.login) {
+        if (this.state.token) {
             return <Redirect to="/todos" />;
         } else if (this.state.error) {
             return (
@@ -48,6 +57,7 @@ class Login extends Component {
                 </div>
             )
         }
+        
         return (
             <>
                 <header>
